@@ -32,7 +32,7 @@ Resources:
                 - ce:GetSavingsPlansCoverage
                 - ce:GetSavingsPlansUtilization
               Effect: Allow
-              Resource: !Sub arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:event-bus/default
+              Resource: "*"
               Sid: AllowCostExplorerRead
           Version: "2012-10-17"
       Runtime: python3.10
