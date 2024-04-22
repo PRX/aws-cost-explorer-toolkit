@@ -1,0 +1,16 @@
+# sam build && sam deploy
+
+version = 0.1
+
+[default.deploy.parameters]
+profile = "prx-main"
+stack_name = "cost-explorer-toolkit"
+s3_prefix = "cost-explorer-toolkit"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM"
+region = "us-east-2"
+resolve_s3 = true
+# Parameter overrides only need to be included when a parameter is changing
+# parameter_overrides = [
+#   "tktktk=",
+# ]

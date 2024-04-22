@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: A collection of utilities that integrate with Cost Explorer
+
+Resources:
+  DailySlackSnapshotFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/daily-slack-snapshot
+      Description: >-
+        Sends daily messages to Slack with AWS billing information
+      Events:
+        Cron:
+          Properties:
+            Description: Triggers the Cost Explorer report once a day
+            Enabled: true
+            Schedule: cron(0 14 * * ? *)
+          Type: Schedule
+      Handler: lambda_function.lambda_handler
+      MemorySize: 512
+      Policies:
+        - Statement:
+            - Action: events:PutEvents
+              Effect: Allow
+              Resource: !Sub arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:event-bus/default
+              Sid: AllowDefaultEventBusPut
+            - Action:
+                - ce:GetCostAndUsage
+                - ce:GetReservationCoverage
+                - ce:GetReservationUtilization
+                - ce:GetSavingsPlansCoverage
+                - ce:GetSavingsPlansUtilization
+              Effect: Allow
+              Resource: !Sub arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:event-bus/default
+              Sid: AllowCostExplorerRead
+          Version: "2012-10-17"
+      Runtime: python3.10
+      Tags:
+        prx:meta:tagging-version: 2021-04-07
+        prx:cloudformation:stack-name: !Ref AWS::StackName
+        prx:cloudformation:stack-id: !Ref AWS::StackId
+        prx:ops:environment: Production
+        prx:dev:application: Cost Explorer Toolkit
+      Timeout: 16
+  DailySlackSnapshotLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${DailySlackSnapshotFunction}
+      RetentionInDays: 30
+      Tags:
+        - { Key: prx:meta:tagging-version, Value: "2021-04-07" }
+        - { Key: prx:cloudformation:stack-name, Value: !Ref AWS::StackName }
+        - { Key: prx:cloudformation:stack-id, Value: !Ref AWS::StackId }
+        - { Key: prx:ops:environment, Value: Production }
+        - { Key: prx:dev:application, Value: Cost Explorer Toolkit }
+  DailySlackSnapshotErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: "MINOR [Cost Explorer] Daily Snapshot <prod> EXPERIENCING ERRORS"
+      AlarmDescription: >-
+        The error rate on the daily Cost Explorer snapshot
+        Lambda function has exceeded 0.
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref DailySlackSnapshotFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Tags:
+        - { Key: prx:meta:tagging-version, Value: "2021-04-07" }
+        - { Key: prx:cloudformation:stack-name, Value: !Ref AWS::StackName }
+        - { Key: prx:cloudformation:stack-id, Value: !Ref AWS::StackId }
+        - { Key: prx:ops:environment, Value: Production }
+        - { Key: prx:dev:application, Value: Cost Explorer Toolkit }
+      Threshold: 0
+      TreatMissingData: notBreaching
