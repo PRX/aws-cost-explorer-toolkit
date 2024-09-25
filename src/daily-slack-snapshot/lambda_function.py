@@ -242,6 +242,35 @@ def lambda_handler(event, context):
                                 "type": "image",
                                 "title": {
                                     "type": "plain_text",
+                                    "text": "ECS Savings Plan Coverage",
+                                    "emoji": True,
+                                },
+                                "image_url": daily_savings_plan_coverage_chart_url(
+                                    "Amazon Elastic Container Service",
+                                    date_start,
+                                    date_end,
+                                ),
+                                "alt_text": "ECS (e.g. Fargate) savings plans coverage stacked bar chart",
+                            },
+                            {
+                                "type": "image",
+                                "title": {
+                                    "type": "plain_text",
+                                    "text": "Lambda Savings Plan Coverage",
+                                    "emoji": True,
+                                },
+                                "image_url": daily_savings_plan_coverage_chart_url(
+                                    "AWS Lambda",
+                                    date_start,
+                                    date_end,
+                                ),
+                                "alt_text": "Lambda savings plans coverage stacked bar chart",
+                            },
+                            {"type": "divider"},
+                            {
+                                "type": "image",
+                                "title": {
+                                    "type": "plain_text",
                                     "text": "RDS Reservations Utilization",
                                     "emoji": True,
                                 },
