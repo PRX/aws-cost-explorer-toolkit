@@ -1,7 +1,5 @@
 import boto3
-import os
 import json
-import re
 from datetime import datetime, timedelta
 
 ce = boto3.client("ce")
