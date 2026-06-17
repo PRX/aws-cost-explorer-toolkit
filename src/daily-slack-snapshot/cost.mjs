@@ -5,7 +5,7 @@ import {
   CostExplorerClient,
   GetCostAndUsageCommand,
 } from "@aws-sdk/client-cost-explorer";
-import { di, num } from "./util.mjs";
+import { di, getDateStringsForRange, num } from "./util.mjs";
 
 const ce = new CostExplorerClient({ apiVersion: "2017-10-25" });
 
@@ -53,15 +53,10 @@ export default async function daily(rangeStart, rangeEnd, filter) {
   const costData = await ce.send(new GetCostAndUsageCommand(commandInput));
   const costResultsByTime = costData.ResultsByTime;
 
-  if (!costResultsByTime) {
-    return {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: "Cost chart data could not be found.",
-      },
-    };
-  }
+  const last20Days = getDateStringsForRange(rangeStart, rangeEnd).slice(
+    -21,
+    -1,
+  );
 
   return {
     type: "data_visualization",
@@ -72,16 +67,19 @@ export default async function daily(rangeStart, rangeEnd, filter) {
       series: [
         {
           name: "Unblended Cost",
-          data: costResultsByTime.map((r) => {
+          data: last20Days.map((d) => {
             return {
-              label: r.TimePeriod?.Start,
-              value: num(r.Total?.UnblendedCost.Amount),
+              label: d,
+              value: num(
+                costResultsByTime?.find((r) => r.TimePeriod?.Start === d)?.Total
+                  ?.UnblendedCost.Amount,
+              ),
             };
           }),
         },
       ],
       axis_config: {
-        categories: costResultsByTime.map((r) => r.TimePeriod?.Start),
+        categories: last20Days,
         y_label: "Amount ($)",
       },
     },

@@ -6,7 +6,7 @@ import {
   GetReservationUtilizationCommand,
   GetSavingsPlansUtilizationCommand,
 } from "@aws-sdk/client-cost-explorer";
-import { di, num } from "./util.mjs";
+import { di, getDateStringsForRange, num } from "./util.mjs";
 
 const ce = new CostExplorerClient({ apiVersion: "2017-10-25" });
 
@@ -81,59 +81,60 @@ export default async function daily(rangeStart, rangeEnd) {
     "Amazon ElastiCache",
   );
 
-  if (
-    !savingsPlansUtilizationByTime ||
-    !rdsReservationUtilizationByTime ||
-    !ecReservationUtilizationByTime
-  ) {
-    return {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: "Utilization chart data could not be found.",
-      },
-    };
-  }
+  const last20Days = getDateStringsForRange(rangeStart, rangeEnd).slice(
+    -21,
+    -1,
+  );
 
   return {
     type: "data_visualization",
     // @ts-expect-error
     title: "Savings Plans & Reservation Utilization",
     chart: {
-      type: "bar",
+      type: "line",
       series: [
         {
           name: "Savings Plans",
-          data: savingsPlansUtilizationByTime.map((u) => {
+          data: last20Days.map((d) => {
             return {
-              label: u.TimePeriod?.Start,
-              value: num(u.Utilization?.UtilizationPercentage),
+              label: d,
+              value: num(
+                savingsPlansUtilizationByTime?.find(
+                  (u) => u.TimePeriod?.Start === d,
+                )?.Utilization?.UtilizationPercentage,
+              ),
             };
           }),
         },
         {
           name: "RDS",
-          data: rdsReservationUtilizationByTime.map((u) => {
+          data: last20Days.map((d) => {
             return {
-              label: u.TimePeriod?.Start,
-              value: num(u.Total?.UtilizationPercentage),
+              label: d,
+              value: num(
+                rdsReservationUtilizationByTime?.find(
+                  (u) => u.TimePeriod?.Start === d,
+                )?.Total?.UtilizationPercentage,
+              ),
             };
           }),
         },
         {
           name: "ElastiCache",
-          data: ecReservationUtilizationByTime.map((u) => {
+          data: last20Days.map((d) => {
             return {
-              label: u.TimePeriod?.Start,
-              value: num(u.Total?.UtilizationPercentage),
+              label: d,
+              value: num(
+                ecReservationUtilizationByTime?.find(
+                  (u) => u.TimePeriod?.Start === d,
+                )?.Total?.UtilizationPercentage,
+              ),
             };
           }),
         },
       ],
       axis_config: {
-        categories: savingsPlansUtilizationByTime.map(
-          (u) => u.TimePeriod?.Start,
-        ),
+        categories: last20Days,
         y_label: "Utilization (%)",
       },
     },

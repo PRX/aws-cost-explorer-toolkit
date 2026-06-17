@@ -6,7 +6,7 @@ import {
   GetReservationCoverageCommand,
   GetSavingsPlansCoverageCommand,
 } from "@aws-sdk/client-cost-explorer";
-import { di, num } from "./util.mjs";
+import { di, getDateStringsForRange, num } from "./util.mjs";
 
 const ce = new CostExplorerClient({ apiVersion: "2017-10-25" });
 
@@ -108,32 +108,10 @@ export default async function daily(rangeStart, rangeEnd) {
     "Amazon ElastiCache",
   );
 
-  if (
-    !ec2Coverages ||
-    !ecsCoverages ||
-    !lambdaCoverages ||
-    !rdsCoverages ||
-    !ecCoverages
-  ) {
-    return {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: "Utilization chart data could not be found.",
-      },
-    };
-  }
-
-  // Collect all the dates seen in
-  const categories = [
-    ...new Set([
-      ...categoriesFromCoverages(ec2Coverages),
-      ...categoriesFromCoverages(ecsCoverages),
-      ...categoriesFromCoverages(lambdaCoverages),
-      ...categoriesFromCoverages(rdsCoverages),
-      ...categoriesFromCoverages(ecCoverages),
-    ]),
-  ].sort();
+  const last20Days = getDateStringsForRange(rangeStart, rangeEnd).slice(
+    -21,
+    -1,
+  );
 
   return {
     type: "data_visualization",
@@ -144,52 +122,67 @@ export default async function daily(rangeStart, rangeEnd) {
       series: [
         {
           name: "EC2",
-          data: ec2Coverages.map((c) => {
+          data: last20Days.map((d) => {
             return {
-              label: c.TimePeriod?.Start,
-              value: num(c.Coverage?.CoveragePercentage),
+              label: d,
+              value: num(
+                ec2Coverages?.find((c) => c.TimePeriod?.Start === d)?.Coverage
+                  ?.CoveragePercentage,
+              ),
             };
           }),
         },
         {
           name: "ECS",
-          data: ecsCoverages.map((c) => {
+          data: last20Days.map((d) => {
             return {
-              label: c.TimePeriod?.Start,
-              value: num(c.Coverage?.CoveragePercentage),
+              label: d,
+              value: num(
+                ecsCoverages?.find((c) => c.TimePeriod?.Start === d)?.Coverage
+                  ?.CoveragePercentage,
+              ),
             };
           }),
         },
         {
           name: "Lambda",
-          data: lambdaCoverages.map((c) => {
+          data: last20Days.map((d) => {
             return {
-              label: c.TimePeriod?.Start,
-              value: num(c.Coverage?.CoveragePercentage),
+              label: d,
+              value: num(
+                lambdaCoverages?.find((c) => c.TimePeriod?.Start === d)
+                  ?.Coverage?.CoveragePercentage,
+              ),
             };
           }),
         },
         {
           name: "RDS",
-          data: rdsCoverages.map((c) => {
+          data: last20Days.map((d) => {
             return {
-              label: c.TimePeriod?.Start,
-              value: num(c.Total?.CoverageHours?.CoverageHoursPercentage),
+              label: d,
+              value: num(
+                rdsCoverages?.find((c) => c.TimePeriod?.Start === d)?.Total
+                  ?.CoverageHours?.CoverageHoursPercentage,
+              ),
             };
           }),
         },
         {
           name: "ElastiCache",
-          data: ecCoverages.map((c) => {
+          data: last20Days.map((d) => {
             return {
-              label: c.TimePeriod?.Start,
-              value: num(c.Total?.CoverageHours?.CoverageHoursPercentage),
+              label: d,
+              value: num(
+                ecCoverages?.find((c) => c.TimePeriod?.Start === d)?.Total
+                  ?.CoverageHours?.CoverageHoursPercentage,
+              ),
             };
           }),
         },
       ],
       axis_config: {
-        categories,
+        categories: last20Days,
         y_label: "Coverage (%)",
       },
     },

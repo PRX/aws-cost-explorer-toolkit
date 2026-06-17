@@ -7,34 +7,40 @@ import {
 import dailyCost, { usageFilter } from "./cost.mjs";
 import dailyCoverage from "./coverage.mjs";
 import dailyUtilization from "./utilization.mjs";
+import { getDateStringsForRange } from "./util.mjs";
+import { log } from "console";
 
 const eventbridge = new EventBridgeClient({ apiVersion: "2015-10-07" });
 
 export const handler = async () => {
   const now = new Date(Date.now());
-  const rangeStart = new Date(now.valueOf() - 1000 * 86400 * 19);
-  // Cost Explorer treats the range end as exclusive, so if it's the 20th when
-  // this is runs, the queried range will end on the 19th. Some CE APIs, though,
-  // are a day or so behind, and won't return data for the 19th even if it is
-  // the 20th; they will only return data as recent as the 18th. Other APIs are
-  // more current. In order to avoid complexity of trying to handle both cases,
-  // and since series in Slack data viz blocks must have values for every
-  // category, we always ignore the current day and yesterday. I.e., we force
-  // the range only include up to the 18th, which generally will normalize
-  // results from the various APIs.
-  const rangeEnd = new Date(now.valueOf() - 1000 * 86400 * 1);
+
+  // Cost Explorer API always works off UTC, and uses an exclusive end date. We
+  // always use the current UTC midnight as the end date. So if it's currenly
+  // 11 PM ET on the 15th, that would be 4 AM UTC on the 16th, and we would use
+  // and end date of midnight on the 16th. In most cases CE will have data up
+  // to and including the 15th, so an end date of the 16th is what we want.
+  const rangeEnd = new Date(now);
+  rangeEnd.setUTCHours(0, 0, 0);
+
+  // Go back a bunch of days. We only ever show a max of 20 data point because
+  // that's Slack's limit for a single series, but we fetch a few more days
+  // than that because sometimes CE is missing the most recent day or two.
+  const rangeStart = new Date(rangeEnd);
+  rangeStart.setDate(rangeStart.getDate() - 24);
 
   const blocks = [
-    await dailyUtilization(rangeStart, rangeEnd),
+    // await dailyUtilization(rangeStart, rangeEnd),
     await dailyCoverage(rangeStart, rangeEnd),
-    await dailyCost(rangeStart, rangeEnd, false),
-    await dailyCost(rangeStart, rangeEnd, usageFilter),
+    // await dailyCost(rangeStart, rangeEnd, false),
+    // await dailyCost(rangeStart, rangeEnd, usageFilter),
   ];
 
   for (const block of blocks) {
     /** @type {AllMessageEvents} */
     const msg = {
-      channel: "G9MGS7W8N", // #ops-billing
+      // channel: "G9MGS7W8N", // #ops-billing
+      channel: "CHZTAGBM2", // #sandbox2
       username: "AWS Cost Explorer",
       // @ts-expect-error
       icon_emoji: ":ops-costexplorer:",
