@@ -7,8 +7,6 @@ import {
 import dailyCost, { usageFilter } from "./cost.mjs";
 import dailyCoverage from "./coverage.mjs";
 import dailyUtilization from "./utilization.mjs";
-import { getDateStringsForRange } from "./util.mjs";
-import { log } from "console";
 
 const eventbridge = new EventBridgeClient({ apiVersion: "2015-10-07" });
 

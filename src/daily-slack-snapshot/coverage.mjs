@@ -65,15 +65,6 @@ async function reservationCoverages(rangeStart, rangeEnd, service) {
 }
 
 /**
- * Returns the
- * @param {CoverageByTime[] | SavingsPlansCoverage[]} coverages
- * @returns {(String | undefined)[]}
- */
-function categoriesFromCoverages(coverages) {
-  return coverages.map((c) => c.TimePeriod?.Start);
-}
-
-/**
  * @param {Date} rangeStart
  * @param {Date} rangeEnd
  * @returns {Promise<Block | SectionBlock>}
