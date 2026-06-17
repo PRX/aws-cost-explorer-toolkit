@@ -25,7 +25,6 @@
   "devDependencies": {
     "@biomejs/biome": "*",
     "@slack/types": "*",
-    "@types/aws-lambda": "*",
     "@types/node": "*",
     "jsdoc": "*",
     "prettier": "*",
