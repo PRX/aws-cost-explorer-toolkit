@@ -7,5 +7,9 @@ on:
 jobs:
   check-cloudformation:
     uses: prx/.github/.github/workflows/check-project-std-cloudformation.yml@main
-  # check-python:
-  #   uses: prx/.github/.github/workflows/check-project-std-python.yml@main
+  check-javascript:
+    uses: prx/.github/.github/workflows/check-project-std-javascript.yml@main
+  check-json:
+    uses: prx/.github/.github/workflows/check-project-std-json.yml@main
+  check-yaml:
+    uses: prx/.github/.github/workflows/check-project-std-yaml.yml@main

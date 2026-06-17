@@ -18,7 +18,7 @@ Resources:
             Enabled: true
             Schedule: cron(0 14 * * ? *)
           Type: Schedule
-      Handler: lambda_function.lambda_handler
+      Handler: index.handler
       MemorySize: 512
       Policies:
         - Statement:
@@ -36,7 +36,7 @@ Resources:
               Resource: "*"
               Sid: AllowCostExplorerRead
           Version: "2012-10-17"
-      Runtime: python3.14
+      Runtime: nodejs24.x
       Tags:
         prx:meta:tagging-version: 2021-04-07
         prx:cloudformation:stack-name: !Ref AWS::StackName

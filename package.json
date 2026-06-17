@@ -4,7 +4,7 @@
   "description": "A collection of utilities that integrate with AWS Cost Explorer",
   "type": "module",
   "engines": {
-    "node": ">= 22.0.0"
+    "node": ">= 24.0.0"
   },
   "repository": {
     "type": "git",
@@ -19,16 +19,14 @@
   },
   "homepage": "https://github.com/PRX/aws-cost-explorer-toolkit#readme",
   "dependencies": {
-    "@aws-sdk/client-eventbridge": "*"
+    "@aws-sdk/client-eventbridge": "*",
+    "@aws-sdk/client-cost-explorer": "*"
   },
   "devDependencies": {
+    "@biomejs/biome": "*",
+    "@slack/types": "*",
+    "@types/aws-lambda": "*",
     "@types/node": "*",
-    "eslint": "*",
-    "eslint-config-airbnb-base": "*",
-    "eslint-config-prettier": "*",
-    "eslint-plugin-import": "*",
-    "eslint-plugin-jest": "*",
-    "eslint-plugin-prettier": "*",
     "jsdoc": "*",
     "prettier": "*",
     "typescript": "*",
