@@ -30,17 +30,16 @@ export const handler = async () => {
   rangeStart.setDate(rangeStart.getDate() - 24);
 
   const blocks = [
-    // await dailyUtilization(rangeStart, rangeEnd),
+    await dailyUtilization(rangeStart, rangeEnd),
     await dailyCoverage(rangeStart, rangeEnd),
-    // await dailyCost(rangeStart, rangeEnd, false),
-    // await dailyCost(rangeStart, rangeEnd, usageFilter),
+    await dailyCost(rangeStart, rangeEnd, false, "Total Cost"),
+    await dailyCost(rangeStart, rangeEnd, usageFilter, "Approx. Usage Cost"),
   ];
 
   for (const block of blocks) {
     /** @type {AllMessageEvents} */
     const msg = {
-      // channel: "G9MGS7W8N", // #ops-billing
-      channel: "CHZTAGBM2", // #sandbox2
+      channel: "G9MGS7W8N", // #ops-billing
       username: "AWS Cost Explorer",
       // @ts-expect-error
       icon_emoji: ":ops-costexplorer:",

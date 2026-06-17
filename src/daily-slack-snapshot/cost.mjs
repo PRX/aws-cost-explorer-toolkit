@@ -33,9 +33,10 @@ export const usageFilter = {
  * @param {Date} rangeStart
  * @param {Date} rangeEnd
  * @param {Expression | false} filter
+ * @param {String} title
  * @returns {Promise<Block | SectionBlock>}
  */
-export default async function daily(rangeStart, rangeEnd, filter) {
+export default async function daily(rangeStart, rangeEnd, filter, title) {
   /** @type {GetCostAndUsageCommandInput} */
   const commandInput = {
     Granularity: "DAILY",
@@ -61,7 +62,7 @@ export default async function daily(rangeStart, rangeEnd, filter) {
   return {
     type: "data_visualization",
     // @ts-expect-error
-    title: `Cost`,
+    title,
     chart: {
       type: "bar",
       series: [
